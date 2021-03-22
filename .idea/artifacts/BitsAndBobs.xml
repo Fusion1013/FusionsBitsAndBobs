@@ -1,0 +1,8 @@
+<component name="ArtifactManager">
+  <artifact type="jar" name="BitsAndBobs">
+    <output-path>$PROJECT_DIR$/../../Minecraft Servers/Spigot 1.16.4 - DEV/plugins</output-path>
+    <root id="archive" name="BitsAndBobs.jar">
+      <element id="module-output" name="FusionsBitsAndBobs" />
+    </root>
+  </artifact>
+</component>

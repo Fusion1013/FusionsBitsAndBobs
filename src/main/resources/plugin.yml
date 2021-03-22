@@ -1,0 +1,15 @@
+name: BitsAndBobs
+version: ${project.version}
+main: me.fusion1013.bitsandbobs.Main
+api-version: 1.13
+authors: [Fusion1013]
+commands:
+  proximity:
+    description: Main Proximity Command
+    usage: /<command>
+  uhc:
+    description: Main UHC Command
+    usage: /<command>
+  delapfloor:
+    description: Generates a delapadated floor
+    usage: /<command>
