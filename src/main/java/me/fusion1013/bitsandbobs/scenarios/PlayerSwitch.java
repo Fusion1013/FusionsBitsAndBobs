@@ -68,28 +68,44 @@ public class PlayerSwitch implements ITimedScenario {
         Collection<String> playersOnTeam1 = t1.getEntries();
         Collection<String> playersOnTeam2 = t2.getEntries();
 
-        if (playersOnTeam1.size() == playersOnTeam2.size()) {
+        List<Player> team1 = removeSpectatingPlayers(playersOnTeam1);
+        List<Player> team2 = removeSpectatingPlayers(playersOnTeam2);
 
-            for (int i = 0; i < playersOnTeam1.size(); i++){
-                Player p1 = Bukkit.getPlayer(get(playersOnTeam1, i));
-                Player p2 = Bukkit.getPlayer(get(playersOnTeam2, i));
+        if (team1.size() == team2.size()) {
 
-                if (p1.getGameMode() != GameMode.SPECTATOR && p2.getGameMode() != GameMode.SPECTATOR){
-                    Location loc1 = p1.getLocation();
-                    Location loc2 = p2.getLocation();
+            for (int i = 0; i < team1.size(); i++){
+                Player p1 = team1.get(i);
+                Player p2 = team2.get(i);
 
-                    p1.teleport(loc2);
-                    p2.teleport(loc1);
+                Location loc1 = p1.getLocation();
+                Location loc2 = p2.getLocation();
 
-                    p1.addPotionEffect(new PotionEffect(PotionEffectType.DAMAGE_RESISTANCE, 200, 255));
-                    p2.addPotionEffect(new PotionEffect(PotionEffectType.DAMAGE_RESISTANCE, 200, 255));
-                }
+                p1.teleport(loc2);
+                p2.teleport(loc1);
+
+                p1.addPotionEffect(new PotionEffect(PotionEffectType.DAMAGE_RESISTANCE, 200, 255));
+                p2.addPotionEffect(new PotionEffect(PotionEffectType.DAMAGE_RESISTANCE, 200, 255));
             }
 
             System.out.println("Switched team " + t1.getName() + " with team " + t2.getName());
 
             return true;
         } else return false;
+    }
+
+    private List<Player> removeSpectatingPlayers(Collection<String> players){
+        List<Player> newPlayerList = new ArrayList<>();
+
+        for (int i = 0; i < players.size(); i++){
+            Player p = Bukkit.getPlayer(get(players, i));
+            if (p != null){
+                if (p.getGameMode() != GameMode.SPECTATOR){
+                    newPlayerList.add(p);
+                }
+            }
+        }
+
+        return newPlayerList;
     }
 
     @Override
