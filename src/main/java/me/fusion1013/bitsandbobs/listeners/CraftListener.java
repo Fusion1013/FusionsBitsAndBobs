@@ -12,16 +12,18 @@ public class CraftListener implements Listener {
 
     @EventHandler
     public void onCraft(CraftItemEvent event){
-        ItemStack result = event.getRecipe().getResult();
-        Material material = result.getType();
+        if (speedMode){
+            ItemStack result = event.getRecipe().getResult();
+            Material material = result.getType();
 
-        System.out.println("Item crafted: " + result);
+            System.out.println("Item crafted: " + result);
 
-        Enchantment ench = getEnchantment(material);
-        if (ench != null) {
-            System.out.println(ench.toString());
-            result.addEnchantment(ench, 2);
-            event.setCurrentItem(result);
+            Enchantment ench = getEnchantment(material);
+            if (ench != null) {
+                System.out.println(ench.toString());
+                result.addEnchantment(ench, 2);
+                event.setCurrentItem(result);
+            }
         }
     }
 
