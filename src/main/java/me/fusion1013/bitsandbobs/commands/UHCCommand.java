@@ -70,6 +70,7 @@ public class UHCCommand implements CommandExecutor {
         sender.sendMessage(ChatColor.YELLOW + "Border End Size: " + Integer.parseInt(settings.get("border_end_size").toString()) + " blocks");
         sender.sendMessage(ChatColor.YELLOW + "Time Before Shrink: " + Integer.parseInt(settings.get("time_before_shrink").toString()) / 60 + "m");
         sender.sendMessage(ChatColor.YELLOW + "Shrink Time: " + Integer.parseInt(settings.get("shrink_time").toString()) / 60 + "m");
+        sender.sendMessage(ChatColor.YELLOW + "Eternal Day Timer: " + Integer.parseInt(settings.get("eternal_day_time").toString()) / 60 + "m");
 
         int bss = Integer.parseInt(settings.get("border_start_size").toString());
         int bes = Integer.parseInt(settings.get("border_end_size").toString());

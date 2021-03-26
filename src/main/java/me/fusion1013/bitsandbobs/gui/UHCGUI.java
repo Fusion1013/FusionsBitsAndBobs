@@ -72,6 +72,7 @@ public class UHCGUI extends AbstractGUI {
         settings.put("border_end_size", borderEndSize);
         settings.put("time_before_shrink", timeBeforeShrink);
         settings.put("shrink_time", shrinkTime);
+        settings.put("eternal_day_time", eternalDayTime);
 
         return settings;
     }
