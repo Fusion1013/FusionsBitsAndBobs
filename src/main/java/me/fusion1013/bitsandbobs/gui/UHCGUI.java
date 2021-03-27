@@ -1,9 +1,9 @@
 package me.fusion1013.bitsandbobs.gui;
 
-import me.fusion1013.bitsandbobs.listeners.DamageListener;
-import me.fusion1013.bitsandbobs.listeners.SwitcherooListener;
 import me.fusion1013.bitsandbobs.util.ItemStackUtil;
 import org.bukkit.*;
+import org.bukkit.advancement.Advancement;
+import org.bukkit.advancement.AdvancementProgress;
 import org.bukkit.command.ConsoleCommandSender;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
@@ -17,6 +17,7 @@ import org.bukkit.scoreboard.*;
 
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.Map;
 
 public class UHCGUI extends AbstractGUI {
@@ -96,44 +97,15 @@ public class UHCGUI extends AbstractGUI {
             Bukkit.broadcastMessage(ChatColor.GREEN + "Starting Game...");
 
             // Give players effects, set gamemode to survival, clear inventories
-            int effectDuration = 20 * countdown + 20 * delayBeforeCountdown;
+            int freezeDuration = 20 * countdown + 20 * delayBeforeCountdown;
             for (Player p : Bukkit.getOnlinePlayers()){
                 if (p.getGameMode() != GameMode.SPECTATOR){
-                    p.addPotionEffect(new PotionEffect(PotionEffectType.REGENERATION, effectDuration, 9));
-                    p.addPotionEffect(new PotionEffect(PotionEffectType.BLINDNESS, effectDuration, 0));
-                    p.addPotionEffect(new PotionEffect(PotionEffectType.SLOW, effectDuration, 200));
-                    p.addPotionEffect(new PotionEffect(PotionEffectType.DAMAGE_RESISTANCE, effectDuration, 200));
-                    p.addPotionEffect(new PotionEffect(PotionEffectType.SATURATION, effectDuration, 200));
-                    p.addPotionEffect(new PotionEffect(PotionEffectType.JUMP, effectDuration, 200));
-
-                    p.setGameMode(GameMode.ADVENTURE);
-
-                    p.getInventory().clear();
-
-                    p.setExp(0);
+                    FreezePlayer(p, freezeDuration);
+                    ResetPlayer(p);
                 }
             }
 
-            // Set world time
-            world.setTime(0);
-
-            // Gamerules
-            for (World w : Bukkit.getWorlds()){
-                w.setGameRule(GameRule.NATURAL_REGENERATION, false);
-                w.setGameRule(GameRule.DO_DAYLIGHT_CYCLE, false);
-            }
-
-            // Scoreboard
-            ScoreboardManager manager = Bukkit.getScoreboardManager();
-            Scoreboard board = manager.getNewScoreboard();
-
-            Objective objective = board.registerNewObjective("health", "health", "Health");
-            objective.setRenderType(RenderType.HEARTS);
-            objective.setDisplaySlot(DisplaySlot.PLAYER_LIST);
-            for (Player p : Bukkit.getOnlinePlayers()){
-                p.setScoreboard(board);
-                p.setHealth(p.getHealth());
-            }
+            PrepareWorlds();
 
             // Set border initial size
             WorldBorder border = world.getWorldBorder();
@@ -149,6 +121,59 @@ public class UHCGUI extends AbstractGUI {
             this.openInventories.remove(player.getUniqueId());
             player.closeInventory();
         });
+    }
+
+    private void CreateScoreboards(){
+        // Scoreboard
+
+        for (Player p : Bukkit.getOnlinePlayers()){
+            Scoreboard board = p.getScoreboard();
+            Objective objective = board.registerNewObjective("health", "health", "Health");
+            objective.setRenderType(RenderType.HEARTS);
+            objective.setDisplaySlot(DisplaySlot.PLAYER_LIST);
+            p.addPotionEffect(new PotionEffect(PotionEffectType.HEAL, 10, 200));
+        }
+    }
+
+    private void PrepareWorlds(){
+        for (World w : Bukkit.getWorlds()){
+            w.setGameRule(GameRule.NATURAL_REGENERATION, false);
+            w.setGameRule(GameRule.DO_DAYLIGHT_CYCLE, false);
+            w.setTime(0);
+        }
+    }
+
+    /***
+     * Resets the player p
+     * @param p
+     */
+    private void ResetPlayer(Player p){
+        p.setGameMode(GameMode.ADVENTURE);
+        p.getInventory().clear();
+        p.setExp(0);
+
+        // Clears all advancement progress
+        Iterator<Advancement> iterator = Bukkit.getServer().advancementIterator();
+        while (iterator.hasNext())
+        {
+            AdvancementProgress progress = p.getAdvancementProgress(iterator.next());
+            for (String criteria : progress.getAwardedCriteria())
+                progress.revokeCriteria(criteria);
+        }
+    }
+
+    /***
+     * Freezes the player p for the duration
+     * @param p player to freeze
+     * @param duration duration to freeze the player in ticks
+     */
+    private void FreezePlayer(Player p, int duration){
+        p.addPotionEffect(new PotionEffect(PotionEffectType.REGENERATION, duration, 200));
+        p.addPotionEffect(new PotionEffect(PotionEffectType.BLINDNESS, duration, 0));
+        p.addPotionEffect(new PotionEffect(PotionEffectType.SLOW, duration, 200));
+        p.addPotionEffect(new PotionEffect(PotionEffectType.DAMAGE_RESISTANCE, duration, 200));
+        p.addPotionEffect(new PotionEffect(PotionEffectType.SATURATION, duration, 200));
+        p.addPotionEffect(new PotionEffect(PotionEffectType.JUMP, duration, 200));
     }
 
     private void timerEvents(){
