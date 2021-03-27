@@ -6,6 +6,10 @@ import org.bukkit.ChatColor;
 import org.bukkit.Material;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
+import org.bukkit.scoreboard.DisplaySlot;
+import org.bukkit.scoreboard.Objective;
+import org.bukkit.scoreboard.RenderType;
+import org.bukkit.scoreboard.Scoreboard;
 
 public class TeamsGUI extends AbstractGUI {
 
@@ -34,24 +38,32 @@ public class TeamsGUI extends AbstractGUI {
     private void registerTeams(){
         int slot = 0;
         for (ChatColor c : ChatColor.values()){
-            if (Bukkit.getScoreboardManager().getMainScoreboard().getTeam(c.name()) == null){
-                Bukkit.getScoreboardManager().getMainScoreboard().registerNewTeam(c.name());
+            // Register new teams
+            Scoreboard board = Bukkit.getScoreboardManager().getMainScoreboard();
+            if (board.getTeam(c.name()) == null){
+                board.registerNewTeam(c.name());
+                Objective objective = board.registerNewObjective("health", "health", "Health");
+                objective.setRenderType(RenderType.HEARTS);
+                objective.setDisplaySlot(DisplaySlot.PLAYER_LIST);
             }
 
+            // Set color and friendly fire
             Bukkit.getScoreboardManager().getMainScoreboard().getTeam(c.name()).setColor(c);
             Bukkit.getScoreboardManager().getMainScoreboard().getTeam(c.name()).setAllowFriendlyFire(false);
 
+            // Create GUI Item
             ItemStack stack = new ItemStackUtil(getTeamMaterial(c.name()))
                     .setName(c.name())
                     .getItemStack();
             setItem(slot, stack, player -> {
 
+                // Remove player from all other teams
                 for (ChatColor c1 : ChatColor.values()){
                     Bukkit.getScoreboardManager().getMainScoreboard().getTeam(c1.name()).removeEntry(player.getName());
                 }
 
+                // Add player to this team
                 Bukkit.getScoreboardManager().getMainScoreboard().getTeam(c.name()).addEntry(player.getName());
-
                 player.sendMessage(ChatColor.YELLOW + "Joined team " + c + c.name());
             });
             slot++;

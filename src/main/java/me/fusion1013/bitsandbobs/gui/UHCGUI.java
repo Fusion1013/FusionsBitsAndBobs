@@ -123,18 +123,6 @@ public class UHCGUI extends AbstractGUI {
         });
     }
 
-    private void CreateScoreboards(){
-        // Scoreboard
-
-        for (Player p : Bukkit.getOnlinePlayers()){
-            Scoreboard board = p.getScoreboard();
-            Objective objective = board.registerNewObjective("health", "health", "Health");
-            objective.setRenderType(RenderType.HEARTS);
-            objective.setDisplaySlot(DisplaySlot.PLAYER_LIST);
-            p.addPotionEffect(new PotionEffect(PotionEffectType.HEAL, 10, 200));
-        }
-    }
-
     private void PrepareWorlds(){
         for (World w : Bukkit.getWorlds()){
             w.setGameRule(GameRule.NATURAL_REGENERATION, false);
@@ -160,6 +148,10 @@ public class UHCGUI extends AbstractGUI {
             for (String criteria : progress.getAwardedCriteria())
                 progress.revokeCriteria(criteria);
         }
+
+        // Damages then heals the player to reset health scoreboard
+        p.addPotionEffect(new PotionEffect(PotionEffectType.INCREASE_DAMAGE, 1, 1));
+        p.addPotionEffect(new PotionEffect(PotionEffectType.HEAL, 1, 200));
     }
 
     /***
