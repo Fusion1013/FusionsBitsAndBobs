@@ -83,8 +83,8 @@ public class PlayerSwitch implements ITimedScenario {
                 p1.teleport(loc2);
                 p2.teleport(loc1);
 
-                p1.addPotionEffect(new PotionEffect(PotionEffectType.DAMAGE_RESISTANCE, 200, 255));
-                p2.addPotionEffect(new PotionEffect(PotionEffectType.DAMAGE_RESISTANCE, 200, 255));
+                p1.addPotionEffect(new PotionEffect(PotionEffectType.DAMAGE_RESISTANCE, 200, 200));
+                p2.addPotionEffect(new PotionEffect(PotionEffectType.DAMAGE_RESISTANCE, 200, 200));
             }
 
             System.out.println("Switched team " + t1.getName() + " with team " + t2.getName());
