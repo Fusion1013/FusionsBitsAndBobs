@@ -4,16 +4,10 @@ import me.fusion1013.bitsandbobs.commands.*;
 import me.fusion1013.bitsandbobs.gui.AbstractGUIListener;
 import me.fusion1013.bitsandbobs.gui.GUIHolder;
 import me.fusion1013.bitsandbobs.gui.UHCGUI;
-import me.fusion1013.bitsandbobs.listeners.DamageListener;
 import me.fusion1013.bitsandbobs.listeners.DeathListener;
-import me.fusion1013.bitsandbobs.listeners.SwitcherooListener;
 import org.bukkit.Bukkit;
-import org.bukkit.World;
 import org.bukkit.event.Listener;
 import org.bukkit.plugin.java.JavaPlugin;
-import org.bukkit.util.FileUtil;
-
-import java.io.File;
 
 public final class Main extends JavaPlugin implements Listener {
 

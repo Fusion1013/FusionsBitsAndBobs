@@ -13,7 +13,6 @@ import org.bukkit.potion.PotionEffectType;
 import org.bukkit.scheduler.BukkitRunnable;
 import org.bukkit.scheduler.BukkitScheduler;
 import org.bukkit.scheduler.BukkitTask;
-import org.bukkit.scoreboard.*;
 
 import java.util.Arrays;
 import java.util.HashMap;
@@ -22,7 +21,7 @@ import java.util.Map;
 
 public class UHCGUI extends AbstractGUI {
 
-    private Plugin plugin;
+    private final Plugin plugin;
 
     // Default Values
     private int borderStartSize = 4000;
@@ -38,7 +37,7 @@ public class UHCGUI extends AbstractGUI {
     ScenarioGUI scenarioGui;
     TeamsGUI teamsGUI;
 
-    private World world;
+    private final World world;
 
     public UHCGUI(Plugin plugin, World world) {
         super(9, "Fusion-UHC");
@@ -53,6 +52,9 @@ public class UHCGUI extends AbstractGUI {
         reload();
     }
 
+    /**
+     * Reloads the GUI
+     */
     public void reload(){
         teams(6);
         addScenarioButton(2);
