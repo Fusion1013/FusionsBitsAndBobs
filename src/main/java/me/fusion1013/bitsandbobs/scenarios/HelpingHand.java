@@ -9,12 +9,12 @@ import org.bukkit.plugin.Plugin;
 import org.bukkit.scheduler.BukkitRunnable;
 import org.bukkit.scheduler.BukkitTask;
 
-public class OnTheEdge implements ITimedScenario {
+public class HelpingHand implements ITimedScenario {
 
     private Plugin plugin;
     private boolean enabled;
 
-    public OnTheEdge(Plugin plugin){
+    public HelpingHand(Plugin plugin){
         this.plugin = plugin;
     }
 
@@ -65,7 +65,7 @@ public class OnTheEdge implements ITimedScenario {
 
     @Override
     public String getName() {
-        return "OnTheEdge";
+        return "HelpingHand";
     }
 
     @Override

@@ -32,7 +32,7 @@ public class ScenarioGUI extends AbstractGUI {
 
         timedScenarios = new ArrayList<>();
         timedScenarios.add(new PlayerSwitch(plugin));
-        timedScenarios.add(new OnTheEdge(plugin));
+        timedScenarios.add(new HelpingHand(plugin));
         timedScenarios.add(new Snitch(plugin));
 
         updateScenarios();
