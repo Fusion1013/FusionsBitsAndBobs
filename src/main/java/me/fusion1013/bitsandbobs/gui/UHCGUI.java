@@ -27,14 +27,14 @@ public class UHCGUI extends AbstractGUI {
     // Default Values
     private int borderStartSize = 4000;
     private int borderEndSize = 100;
-    private int timeBeforeShrink = 3600;
-    private int shrinkTime = 3600;
-    private int eternalDayTime = -1;
+    private int timeBeforeShrink = 1200;
+    private int shrinkTime = 2400;
+    private int eternalDayTime = 1600;
 
     private int switchDelay = 60 * 8; // Time in seconds
     private int switchRandom = 120;
 
-    // Guis
+    // GUI's
     ScenarioGUI scenarioGui;
     TeamsGUI teamsGUI;
 
@@ -59,13 +59,21 @@ public class UHCGUI extends AbstractGUI {
         startGame(4, 11, 10);
     }
 
+    /**
+     * Resets everything to default values
+     */
     public void setDefaults(){
         borderStartSize = 4000;
         borderEndSize = 100;
-        timeBeforeShrink = 3600;
-        shrinkTime = 3600;
+        timeBeforeShrink = 1200;
+        shrinkTime = 2400;
+        eternalDayTime = 1600;
     }
 
+    /**
+     * Returns a map of all current settings
+     * @return
+     */
     public Map<String, Integer> getSettings(){
         Map<String, Integer> settings = new HashMap<>();
 
@@ -107,11 +115,6 @@ public class UHCGUI extends AbstractGUI {
 
             PrepareWorlds();
 
-            // Set border initial size
-            WorldBorder border = world.getWorldBorder();
-            border.setCenter(new Location(world, 0, 0, 0));
-            border.setSize(borderStartSize, 0);
-
             // Teleport all players that are not in gm 3
             spreadPlayers();
 
@@ -123,15 +126,27 @@ public class UHCGUI extends AbstractGUI {
         });
     }
 
+    /**
+     * Resets all worlds
+     */
     private void PrepareWorlds(){
         for (World w : Bukkit.getWorlds()){
+
+            // Set gamerules
             w.setGameRule(GameRule.NATURAL_REGENERATION, false);
             w.setGameRule(GameRule.DO_DAYLIGHT_CYCLE, false);
+
+            // Set world times to dawn
             w.setTime(0);
+
+            // Set border initial size
+            WorldBorder border = world.getWorldBorder();
+            border.setCenter(new Location(world, 0, 0, 0));
+            border.setSize(borderStartSize, 0);
         }
     }
 
-    /***
+    /**
      * Resets the player p
      * @param p
      */
@@ -148,13 +163,9 @@ public class UHCGUI extends AbstractGUI {
             for (String criteria : progress.getAwardedCriteria())
                 progress.revokeCriteria(criteria);
         }
-
-        // Damages then heals the player to reset health scoreboard
-        p.addPotionEffect(new PotionEffect(PotionEffectType.INCREASE_DAMAGE, 1, 1));
-        p.addPotionEffect(new PotionEffect(PotionEffectType.HEAL, 1, 200));
     }
 
-    /***
+    /**
      * Freezes the player p for the duration
      * @param p player to freeze
      * @param duration duration to freeze the player in ticks
@@ -168,7 +179,96 @@ public class UHCGUI extends AbstractGUI {
         p.addPotionEffect(new PotionEffect(PotionEffectType.JUMP, duration, 200));
     }
 
-    private void timerEvents(){
+    /**
+     * Spreads all players that are not in spectator around the world
+     */
+    private void spreadPlayers(){
+        // Teleport players
+        Bukkit.broadcastMessage(ChatColor.GREEN + "Spreading Players...");
+        int x = 0;
+        int z = 0;
+        int minDistance = borderStartSize / 6;
+        int maxRange = borderStartSize / 2;
+        String players = "@a[gamemode=!spectator]";
+
+        ConsoleCommandSender console = Bukkit.getServer().getConsoleSender();
+        Bukkit.getServer().dispatchCommand(console, String.format("spreadplayers %d %d %d %d %b %s", x, z, minDistance, maxRange, true, players));
+    }
+
+    /**
+     * Starts the border events
+     */
+    private void borderEvents(){
+        // Border handling
+        WorldBorder border = world.getWorldBorder();
+
+        // Schedule border event
+        BukkitScheduler scheduler = Bukkit.getServer().getScheduler();
+        scheduler.scheduleSyncDelayedTask(plugin, new Runnable() {
+            @Override
+            public void run() {
+                border.setSize(borderEndSize, shrinkTime);
+                Bukkit.broadcastMessage(ChatColor.GREEN + "Shrinking border from "
+                        + borderStartSize + " blocks to "
+                        + borderEndSize + " blocks over "
+                        + shrinkTime + " seconds");
+                for (Player p : Bukkit.getOnlinePlayers()){
+                    p.playSound(p.getLocation(), Sound.BLOCK_NOTE_BLOCK_BASEDRUM, 1, 1);
+                }
+            }
+        }, 20 * timeBeforeShrink);
+    }
+
+    /**
+     * Starts the countdown before the game starts
+     * @param countdown countdown length in seconds
+     * @param delayBeforeCountdown delay before the countdown starts in seconds
+     */
+    private void startCountdown(int countdown, int delayBeforeCountdown){
+        BukkitTask task = new BukkitRunnable() {
+            int counter = countdown;
+
+            // Runs the countdown after delay with a period of 1 second
+            public void run() {
+
+                if (counter == countdown){ // Countdown Starting
+                    Bukkit.broadcastMessage(ChatColor.GREEN + "Starting in:");
+                } else if (counter == 0) { // Countdown Finished
+                    Bukkit.broadcastMessage(ChatColor.GREEN + "Go!");
+                    for (Player p : Bukkit.getOnlinePlayers()){
+                        p.playSound(p.getLocation(), Sound.BLOCK_NOTE_BLOCK_PLING, 1, 2);
+                        p.setGameMode(GameMode.SURVIVAL);
+                    }
+
+                    // Starts all the timed events
+                    initTimedEvents();
+                    world.setGameRule(GameRule.DO_DAYLIGHT_CYCLE, true);
+                    this.cancel();
+                } else { // Countdown progress
+                    Bukkit.broadcastMessage(ChatColor.GREEN + "" + counter);
+                    for (Player p : Bukkit.getOnlinePlayers()){
+                        p.playSound(p.getLocation(), Sound.BLOCK_NOTE_BLOCK_PLING, 1, 1);
+                    }
+                }
+                counter--;
+            }
+        }.runTaskTimer(plugin, 20 * delayBeforeCountdown, 20);
+    }
+
+    /**
+     * Initializes all timed events
+     */
+    private void initTimedEvents(){
+        alertEvent();
+        eternalDayEvent();
+        borderEvents();
+        scenarioGui.queueTimedScenarios(20 * switchDelay, 20 * switchRandom);
+    }
+
+    /**
+     * Sends an alert in chat every 20 minutes, with the current border size and speed
+     */
+    private void alertEvent(){
         // Time Alert
         int period = 1200;
 
@@ -192,7 +292,12 @@ public class UHCGUI extends AbstractGUI {
                 }
             }
         }.runTaskTimer(plugin, 20 * period, 20 * period);
+    }
 
+    /**
+     * Initializes the eternal day event
+     */
+    private void eternalDayEvent(){
         // Eternal day
         if (eternalDayTime >= 0){
             BukkitTask task2 = new BukkitRunnable() {
@@ -236,78 +341,9 @@ public class UHCGUI extends AbstractGUI {
     }
 
     /**
-     * Spreads all players that are not in spectator around the world
+     * Teams GUI slot
+     * @param slot
      */
-    private void spreadPlayers(){
-        // Teleport players
-        Bukkit.broadcastMessage(ChatColor.GREEN + "Spreading Players...");
-        int x = 0;
-        int z = 0;
-        int minDistance = borderStartSize / 6;
-        int maxRange = borderStartSize / 2;
-        String players = "@a[gamemode=!spectator]";
-
-        ConsoleCommandSender console = Bukkit.getServer().getConsoleSender();
-        Bukkit.getServer().dispatchCommand(console, String.format("spreadplayers %d %d %d %d %b %s", x, z, minDistance, maxRange, true, players));
-    }
-
-    private void borderEvents(){
-        // Border handling
-        WorldBorder border = world.getWorldBorder();
-
-        // Set border initial size
-        border.setCenter(new Location(world, 0, 0, 0));
-        border.setSize(borderStartSize, 0);
-
-        // Schedule border event
-        BukkitScheduler scheduler = Bukkit.getServer().getScheduler();
-        scheduler.scheduleSyncDelayedTask(plugin, new Runnable() {
-            @Override
-            public void run() {
-                border.setCenter(new Location(world, 0, 0, 0));
-                border.setSize(borderEndSize, shrinkTime);
-                Bukkit.broadcastMessage(ChatColor.GREEN + "Shrinking border from "
-                        + borderStartSize + " blocks to "
-                        + borderEndSize + " blocks over "
-                        + shrinkTime + " seconds");
-                for (Player p : Bukkit.getOnlinePlayers()){
-                    p.playSound(p.getLocation(), Sound.BLOCK_NOTE_BLOCK_BASEDRUM, 1, 1);
-                }
-            }
-        }, 20 * timeBeforeShrink);
-    }
-
-    private void startCountdown(int countdown, int delayBeforeCountdown){
-        BukkitTask task = new BukkitRunnable() {
-            int counter = countdown;
-
-            public void run() {
-
-                if (counter == countdown){ // Countdown Starting
-                    Bukkit.broadcastMessage(ChatColor.GREEN + "Starting in:");
-                } else if (counter == 0) { // Countdown Finished
-                    Bukkit.broadcastMessage(ChatColor.GREEN + "Go!");
-                    for (Player p : Bukkit.getOnlinePlayers()){
-                        p.playSound(p.getLocation(), Sound.BLOCK_NOTE_BLOCK_PLING, 1, 2);
-                        p.setGameMode(GameMode.SURVIVAL);
-                    }
-                    timerEvents();
-                    borderEvents();
-                    scenarioGui.queueTimedScenarios(20 * switchDelay, 20 * switchRandom);
-                    world.setGameRule(GameRule.DO_DAYLIGHT_CYCLE, true);
-                    this.cancel();
-                } else {
-                    Bukkit.broadcastMessage(ChatColor.GREEN + "" + counter);
-                    for (Player p : Bukkit.getOnlinePlayers()){
-                        p.playSound(p.getLocation(), Sound.BLOCK_NOTE_BLOCK_PLING, 1, 1);
-                    }
-                }
-                counter--;
-            }
-        }.runTaskTimer(plugin, 20 * delayBeforeCountdown, 20);
-    }
-
-    // Teams feature
     private void teams(int slot){
         // Creates an iron helmet ItemStack
         ItemStack stack = new ItemStackUtil(Material.IRON_HELMET)
@@ -332,7 +368,7 @@ public class UHCGUI extends AbstractGUI {
         });
     }
 
-    // Getters and Setters
+    /* Getters & Setters */
 
     public void setBorderStartSize(int borderStartSize) {
         this.borderStartSize = borderStartSize;
