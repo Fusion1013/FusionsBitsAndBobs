@@ -101,11 +101,12 @@ public class UHCGUI extends AbstractGUI {
                 if (p.getGameMode() != GameMode.SPECTATOR){
                     p.addPotionEffect(new PotionEffect(PotionEffectType.REGENERATION, effectDuration, 9));
                     p.addPotionEffect(new PotionEffect(PotionEffectType.BLINDNESS, effectDuration, 0));
-                    p.addPotionEffect(new PotionEffect(PotionEffectType.SLOW, effectDuration, 255));
-                    p.addPotionEffect(new PotionEffect(PotionEffectType.DAMAGE_RESISTANCE, effectDuration, 255));
-                    p.addPotionEffect(new PotionEffect(PotionEffectType.SATURATION, effectDuration, 255));
+                    p.addPotionEffect(new PotionEffect(PotionEffectType.SLOW, effectDuration, 200));
+                    p.addPotionEffect(new PotionEffect(PotionEffectType.DAMAGE_RESISTANCE, effectDuration, 200));
+                    p.addPotionEffect(new PotionEffect(PotionEffectType.SATURATION, effectDuration, 200));
+                    p.addPotionEffect(new PotionEffect(PotionEffectType.JUMP, effectDuration, 200));
 
-                    p.setGameMode(GameMode.SURVIVAL);
+                    p.setGameMode(GameMode.ADVENTURE);
 
                     p.getInventory().clear();
 
@@ -271,6 +272,7 @@ public class UHCGUI extends AbstractGUI {
                     Bukkit.broadcastMessage(ChatColor.GREEN + "Go!");
                     for (Player p : Bukkit.getOnlinePlayers()){
                         p.playSound(p.getLocation(), Sound.BLOCK_NOTE_BLOCK_PLING, 1, 2);
+                        p.setGameMode(GameMode.SURVIVAL);
                     }
                     timerEvents();
                     borderEvents();
