@@ -27,9 +27,9 @@ public class PlayerSwitch implements ITimedScenario {
     }
 
     @Override
-    public void QueueScenario(int delay, int randomDelay) {
+    public void QueueScenario() {
         Random r = new Random();
-        int timer = delay + r.nextInt(randomDelay);
+        int timer = ScenarioSettingsHolder.switchDelay + r.nextInt(ScenarioSettingsHolder.switchRandom);
 
         BukkitTask task = new BukkitRunnable() {
 
@@ -54,7 +54,7 @@ public class PlayerSwitch implements ITimedScenario {
                     switchTeams(t, get(normalizedTeams, teamNum));
                 }
 
-                QueueScenario(delay, randomDelay);
+                QueueScenario();
             }
         }.runTaskLater(plugin, timer);
     }

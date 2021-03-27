@@ -78,10 +78,10 @@ public class ScenarioGUI extends AbstractGUI {
         });
     }
 
-    public void queueTimedScenarios(int delay, int randomRange){
+    public void queueTimedScenarios(){
         for (ITimedScenario scenario : timedScenarios){
             if (scenario.getEnabled()){
-                scenario.QueueScenario(delay, randomRange);
+                scenario.QueueScenario();
             }
         }
     }

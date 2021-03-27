@@ -14,10 +14,7 @@ import org.bukkit.scheduler.BukkitRunnable;
 import org.bukkit.scheduler.BukkitScheduler;
 import org.bukkit.scheduler.BukkitTask;
 
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.Map;
+import java.util.*;
 
 public class UHCGUI extends AbstractGUI {
 
@@ -29,9 +26,6 @@ public class UHCGUI extends AbstractGUI {
     private int timeBeforeShrink = 1200;
     private int shrinkTime = 2400;
     private int eternalDayTime = 1600;
-
-    private int switchDelay = 60 * 8; // Time in seconds
-    private int switchRandom = 120;
 
     // GUI's
     ScenarioGUI scenarioGui;
@@ -56,9 +50,9 @@ public class UHCGUI extends AbstractGUI {
      * Reloads the GUI
      */
     public void reload(){
-        teams(6);
-        addScenarioButton(2);
-        startGame(4, 11, 10);
+        teams();
+        addScenarioButton();
+        startGame();
     }
 
     /**
@@ -74,7 +68,7 @@ public class UHCGUI extends AbstractGUI {
 
     /**
      * Returns a map of all current settings
-     * @return
+     * @return map containing the current settings
      */
     public Map<String, Integer> getSettings(){
         Map<String, Integer> settings = new HashMap<>();
@@ -90,24 +84,21 @@ public class UHCGUI extends AbstractGUI {
 
     /**
      * Starts a new game of Fusion-UHC
-     * @param slot the slot in the GUI for the startGame item
-     * @param countdown countdown in seconds before the game starts
-     * @param delayBeforeCountdown delay in seconds before the countdown starts
      */
-    private void startGame(int slot, int countdown, int delayBeforeCountdown){
+    private void startGame(){
         // Creates the UHC Diamond
         ItemStack stack = new ItemStackUtil(Material.DIAMOND)
                 .setName("Start UHC")
                 .setEnchantmentGlint(true)
-                .setLore(Arrays.asList("Starts a game of Fusion-UHC!"))
+                .setLore(Collections.singletonList("Starts a game of Fusion-UHC!"))
                 .getItemStack();
 
         // Sets the ItemStack in the correct GUI slot
-        setItem(slot, stack, player ->{
+        setItem(4, stack, player ->{
             Bukkit.broadcastMessage(ChatColor.GREEN + "Starting Game...");
 
             // Give players effects, set gamemode to survival, clear inventories
-            int freezeDuration = 20 * countdown + 20 * delayBeforeCountdown;
+            int freezeDuration = 20 * 11 + 20 * 10;
             for (Player p : Bukkit.getOnlinePlayers()){
                 if (p.getGameMode() != GameMode.SPECTATOR){
                     FreezePlayer(p, freezeDuration);
@@ -121,9 +112,9 @@ public class UHCGUI extends AbstractGUI {
             spreadPlayers();
 
             // Start the countdown
-            startCountdown(countdown, delayBeforeCountdown);
+            startCountdown();
 
-            this.openInventories.remove(player.getUniqueId());
+            openInventories.remove(player.getUniqueId());
             player.closeInventory();
         });
     }
@@ -150,7 +141,7 @@ public class UHCGUI extends AbstractGUI {
 
     /**
      * Resets the player p
-     * @param p
+     * @param p the player to reset
      */
     private void ResetPlayer(Player p){
         p.setGameMode(GameMode.ADVENTURE);
@@ -206,34 +197,29 @@ public class UHCGUI extends AbstractGUI {
 
         // Schedule border event
         BukkitScheduler scheduler = Bukkit.getServer().getScheduler();
-        scheduler.scheduleSyncDelayedTask(plugin, new Runnable() {
-            @Override
-            public void run() {
-                border.setSize(borderEndSize, shrinkTime);
-                Bukkit.broadcastMessage(ChatColor.GREEN + "Shrinking border from "
-                        + borderStartSize + " blocks to "
-                        + borderEndSize + " blocks over "
-                        + shrinkTime + " seconds");
-                for (Player p : Bukkit.getOnlinePlayers()){
-                    p.playSound(p.getLocation(), Sound.BLOCK_NOTE_BLOCK_BASEDRUM, 1, 1);
-                }
+        scheduler.scheduleSyncDelayedTask(plugin, () -> {
+            border.setSize(borderEndSize, shrinkTime);
+            Bukkit.broadcastMessage(ChatColor.GREEN + "Shrinking border from "
+                    + borderStartSize + " blocks to "
+                    + borderEndSize + " blocks over "
+                    + shrinkTime + " seconds");
+            for (Player p : Bukkit.getOnlinePlayers()){
+                p.playSound(p.getLocation(), Sound.BLOCK_NOTE_BLOCK_BASEDRUM, 1, 1);
             }
         }, 20 * timeBeforeShrink);
     }
 
     /**
      * Starts the countdown before the game starts
-     * @param countdown countdown length in seconds
-     * @param delayBeforeCountdown delay before the countdown starts in seconds
      */
-    private void startCountdown(int countdown, int delayBeforeCountdown){
-        BukkitTask task = new BukkitRunnable() {
-            int counter = countdown;
+    private void startCountdown(){
+        new BukkitRunnable() {
+            int counter = 11;
 
             // Runs the countdown after delay with a period of 1 second
             public void run() {
 
-                if (counter == countdown){ // Countdown Starting
+                if (counter == 11){ // Countdown Starting
                     Bukkit.broadcastMessage(ChatColor.GREEN + "Starting in:");
                 } else if (counter == 0) { // Countdown Finished
                     Bukkit.broadcastMessage(ChatColor.GREEN + "Go!");
@@ -254,7 +240,7 @@ public class UHCGUI extends AbstractGUI {
                 }
                 counter--;
             }
-        }.runTaskTimer(plugin, 20 * delayBeforeCountdown, 20);
+        }.runTaskTimer(plugin, 20 * 10, 20);
     }
 
     /**
@@ -264,7 +250,7 @@ public class UHCGUI extends AbstractGUI {
         alertEvent();
         eternalDayEvent();
         borderEvents();
-        scenarioGui.queueTimedScenarios(20 * switchDelay, 20 * switchRandom);
+        scenarioGui.queueTimedScenarios();
     }
 
     /**
@@ -274,7 +260,7 @@ public class UHCGUI extends AbstractGUI {
         // Time Alert
         int period = 1200;
 
-        BukkitTask task = new BukkitRunnable() {
+        new BukkitRunnable() {
             int counter = 0;
 
             public void run() {
@@ -302,7 +288,7 @@ public class UHCGUI extends AbstractGUI {
     private void eternalDayEvent(){
         // Eternal day
         if (eternalDayTime >= 0){
-            BukkitTask task2 = new BukkitRunnable() {
+            new BukkitRunnable() {
 
                 public void run() {
                     world.setGameRule(GameRule.DO_DAYLIGHT_CYCLE, false);
@@ -313,7 +299,7 @@ public class UHCGUI extends AbstractGUI {
                     }
 
                     // Rotate the sun to midday position over 20 seconds
-                    BukkitTask task = new BukkitRunnable() {
+                    new BukkitRunnable() {
                         long totalTravelDistance = 0;
                         public void run() {
                             long time = world.getTime();
@@ -344,30 +330,25 @@ public class UHCGUI extends AbstractGUI {
 
     /**
      * Teams GUI slot
-     * @param slot
      */
-    private void teams(int slot){
+    private void teams(){
         // Creates an iron helmet ItemStack
         ItemStack stack = new ItemStackUtil(Material.IRON_HELMET)
                 .setName("Teams")
                 .getItemStack();
 
         // Creates the item in the GUI with the given method
-        setItem(slot, stack, player -> {
-            teamsGUI.open(player);
-        });
+        setItem(6, stack, player -> teamsGUI.open(player));
     }
 
     /* Scenarios */
 
-    private void addScenarioButton(int slot){
+    private void addScenarioButton(){
         ItemStack stack = new ItemStackUtil(Material.EMERALD)
                 .setName("Scenarios")
                 .setLore(scenarioGui.getActiveScenarios())
                 .getItemStack();
-        setItem(slot, stack, player -> {
-            scenarioGui.open(player);
-        });
+        setItem(2, stack, player -> scenarioGui.open(player));
     }
 
     /* Getters & Setters */

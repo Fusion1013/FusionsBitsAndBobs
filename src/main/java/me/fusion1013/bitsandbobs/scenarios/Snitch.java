@@ -14,14 +14,13 @@ public class Snitch implements ITimedScenario {
 
     private boolean enabled;
     private Plugin plugin;
-    private int period = 12000;
 
     public Snitch(Plugin plugin){
         this.plugin = plugin;
     }
 
     @Override
-    public void QueueScenario(int delay, int randomDelay) {
+    public void QueueScenario() {
         BukkitTask task = new BukkitRunnable() {
 
             public void run() {
@@ -50,7 +49,7 @@ public class Snitch implements ITimedScenario {
                 p.playSound(p.getLocation(), Sound.ENTITY_WITCH_CELEBRATE, 1, 1);
             }
 
-        }.runTaskTimer(plugin, period, period);
+        }.runTaskTimer(plugin, ScenarioSettingsHolder.snitchDelay, ScenarioSettingsHolder.snitchDelay);
     }
 
     @Override
@@ -75,6 +74,6 @@ public class Snitch implements ITimedScenario {
 
     @Override
     public String getDescription() {
-        return "Prints a random players coordinates in chat every " + period / (20 * 60) + "m";
+        return "Prints a random players coordinates in chat every " + ScenarioSettingsHolder.snitchDelay / (20 * 60) + "m";
     }
 }

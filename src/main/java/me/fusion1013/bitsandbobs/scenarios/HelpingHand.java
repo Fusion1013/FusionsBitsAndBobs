@@ -19,7 +19,7 @@ public class HelpingHand implements ITimedScenario {
     }
 
     @Override
-    public void QueueScenario(int delay, int randomDelay) {
+    public void QueueScenario() {
 
         int timer = 20 * 60 * 10;
 
@@ -42,7 +42,7 @@ public class HelpingHand implements ITimedScenario {
                     minPlayer.playSound(minPlayer.getLocation(), Sound.BLOCK_BEACON_POWER_SELECT, 1, 1);
                 }
 
-                QueueScenario(delay, randomDelay);
+                QueueScenario();
             }
 
         }.runTaskLater(plugin, timer);
