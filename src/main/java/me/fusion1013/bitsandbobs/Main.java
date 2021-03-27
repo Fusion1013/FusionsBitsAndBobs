@@ -8,8 +8,11 @@ import me.fusion1013.bitsandbobs.listeners.DamageListener;
 import me.fusion1013.bitsandbobs.listeners.DeathListener;
 import me.fusion1013.bitsandbobs.listeners.SwitcherooListener;
 import org.bukkit.Bukkit;
+import org.bukkit.World;
 import org.bukkit.event.Listener;
 import org.bukkit.plugin.java.JavaPlugin;
+
+import java.io.File;
 
 public final class Main extends JavaPlugin implements Listener {
 
@@ -39,6 +42,15 @@ public final class Main extends JavaPlugin implements Listener {
 
     @Override
     public void onDisable() {
+        DeleteWorlds();
         // Plugin shutdown logic
+    }
+
+    private void DeleteWorlds(){
+        for (World w : Bukkit.getWorlds()){
+            w.setKeepSpawnInMemory(false);
+            Bukkit.unloadWorld(w, true);
+            w.getWorldFolder().delete();
+        }
     }
 }
